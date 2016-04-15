@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+"""
+File: music2alda
+Author: Julio Tain Sueiras
+Email: juliosueiras@gmail.com
+Github: https://github.com/juliosueiras
+Description: A Converter from MusicXML to alda
+"""
+
+import xml.etree.ElementTree as etree
+import sys, getopt
+
+def convert_music_sheet(notes):
+    result = ''
+    alda_note = ''
+    voice = ''
+    current_voice = ''
+    current_octave = ''
+
+    for note in notes:
+        pitch = note.find('pitch')
+        voice = note.find('voice').text
+
+        if voice is not None:
+            if current_voice != voice:
+                current_voice = voice
+                result += '\nV' + voice + ': '
+
+            if pitch is not None:
+                alda_note = pitch.find('step').text.lower()
+
+                if current_octave != pitch.find('octave').text:
+                    current_octave = pitch.find('octave').text
+                    result += '\n' + 'o' + current_octave + ' '
+
+                if (pitch.find('alter') is not None):
+                    alda_note += '-' if (pitch.find('alter').text == '-1')  else '+'
+
+                if (note.find('duration') is not None):
+                    alda_note += note.find('duration').text
+
+            if note.find('rest') is not None:
+                alda_rest = 'r' + note.find('duration').text
+                result += ' ' + alda_rest + ' '
+
+            result += ' ' + alda_note + ' '
+    return result
+
+
+def main(argv):
+    opts, args = getopt.getopt(argv, '')
+    tree = etree.parse(args[0])
+    notes = tree.findall('.//note')
+
+    print(convert_music_sheet(notes))
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
+
