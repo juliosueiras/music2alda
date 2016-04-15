@@ -24,14 +24,14 @@ def convert_music_sheet(notes):
         if voice is not None:
             if current_voice != voice:
                 current_voice = voice
-                result += '\nV' + voice + ': '
+                result += '\n\tV' + voice + ': '
 
             if pitch is not None:
                 alda_note = pitch.find('step').text.lower()
 
                 if current_octave != pitch.find('octave').text:
                     current_octave = pitch.find('octave').text
-                    result += '\n' + 'o' + current_octave + ' '
+                    result += '\n\t' + 'o' + current_octave + ' '
 
                 if (pitch.find('alter') is not None):
                     alda_note += '-' if (pitch.find('alter').text == '-1')  else '+'
@@ -50,9 +50,12 @@ def convert_music_sheet(notes):
 def main(argv):
     opts, args = getopt.getopt(argv, '')
     tree = etree.parse(args[0])
+    tempo = tree.findall('.//sound')[0].get('tempo')
+    instrument = 'piano' if tree.findall('.//instrument-name')[0].text is None else tree.findall('.//instrument-name')[0].text
     notes = tree.findall('.//note')
 
-    print(convert_music_sheet(notes))
+    print('(tempo! ' + tempo + ')')
+    print(instrument + ':' + convert_music_sheet(notes))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
